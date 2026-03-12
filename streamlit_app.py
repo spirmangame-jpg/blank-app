@@ -104,39 +104,48 @@ if user_prompt := st.chat_input("Ask about your ConnectWise data..."):
             reply_text = response.text
             chart_data_for_history = None
 
-            if "```json" in reply_text:
-                try:
-                    parts = reply_text.split("```json")
-                    text_part = parts[0].strip()
-                    json_part = parts[1].split("```")[0].strip()
-                    chart_json = json.loads(json_part)
-                    
-                    st.markdown(text_part)
-                    
-                    # Chart rendering logic
-                    c_type = chart_json.get("type", "bar")
-                    c_title = chart_json.get("title", "Data Visualization")
-                    c_data = chart_json.get("data")
-                    df_plot = pd.DataFrame(list(c_data.items()), columns=['Category', 'Value'])
+        if "```json" in reply_text:
+            try:
+                # 1. Extract JSON
+                parts = reply_text.split("```json")
+                text_part = parts[0].strip()
+                json_part = parts[1].split("```")[0].strip()
+                chart_json = json.loads(json_part)
+                
+                c_type = chart_json.get("type", "bar")
+                c_title = chart_json.get("title", "Data Insight")
+                c_data = chart_json.get("data")
+                
+                st.markdown(text_part)
+                st.subheader(c_title)
 
-                    if c_type == "pie":
-                        fig = px.pie(df_plot, values='Value', names='Category', title=c_title, hole=0.3)
-                        st.plotly_chart(fig, use_container_width=True)
-                    elif c_type == "line":
-                        st.subheader(c_title)
-                        st.line_chart(c_data)
-                    elif c_type == "area":
-                        st.subheader(c_title)
-                        st.area_chart(c_data)
-                    else:
-                        st.subheader(c_title)
-                        st.bar_chart(c_data)
+                # 2. Logic to handle Multi-Series (Line/Bar) vs Simple (Pie)
+                if isinstance(c_data, dict) and "series" in c_data:
+                    # Format: {"categories": ["2000",...], "series": [{"name": "USA", "data": [...]}]}
+                    df = pd.DataFrame(index=c_data["categories"])
+                    for s in c_data["series"]:
+                        df[s["name"]] = s["data"]
                     
-                    reply_text = text_part
-                    chart_data_for_history = chart_json
-                except Exception as e:
-                    st.error(f"Logic Error: {e}")
-                    st.markdown(reply_text)
+                    if c_type == "line":
+                        st.line_chart(df)
+                    elif c_type == "area":
+                        st.area_chart(df)
+                    else:
+                        st.bar_chart(df)
+                        
+                else:
+                    # Format: {"Label1": 10, "Label2": 20} (Simple format)
+                    df_simple = pd.DataFrame(list(c_data.items()), columns=['Category', 'Value'])
+                    if c_type == "pie":
+                        fig = px.pie(df_simple, values='Value', names='Category', hole=0.3)
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.bar_chart(df_simple.set_index('Category'))
+
+                reply_text = text_part
+            except Exception as e:
+                st.error(f"Charting Error: {e}")
+                st.markdown(reply_text)
             else:
                 st.markdown(reply_text)
 

@@ -44,7 +44,7 @@ except Exception:
 model = genai.GenerativeModel(
     'gemini-2.5-pro',
     system_instruction="""
-    You are a ConnectWise data specialist. 
+    You are Dentek Systems inc's personal AI assistant. You will help with queries. 
     When asked for a graph, chart, or visual:
     1. Provide a brief text summary of the insight.
     2. Provide a JSON block strictly in this format:

@@ -42,7 +42,7 @@ except Exception:
 model = genai.GenerativeModel(
     'gemini-2.5-pro',
     system_instruction="""
-    You are Dentek Systems Inc's Senior AI Strategy Assistant. 
+    You are Dentek Systems Inc's AI Assistant. 
     When asked for a visual:
     1. Provide a professional executive summary.
     2. Provide a JSON block for charting.
@@ -108,7 +108,7 @@ def render_custom_chart(chart_json):
 # ==========================================
 # 4. MAIN CHAT UI
 # ==========================================
-st.title("📊 Dentek Executive Assistant")
+st.title("📊 Dentek AI Assistant")
 
 # Display History
 for message in st.session_state.chat_history:
@@ -118,13 +118,13 @@ for message in st.session_state.chat_history:
             render_custom_chart(message["chart_obj"])
 
 # New Input
-if user_prompt := st.chat_input("How can I assist you with Dentek data today?"):
+if user_prompt := st.chat_input("How can I assist today?"):
     st.session_state.chat_history.append({"role": "user", "text": user_prompt})
     with st.chat_message("user"):
         st.markdown(user_prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Processing Executive Data..."):
+        with st.spinner("Thinking..."):
             response = st.session_state.gemini_chat.send_message(user_prompt)
             full_response = response.text
             

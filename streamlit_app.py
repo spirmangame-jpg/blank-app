@@ -43,7 +43,7 @@ except Exception:
     st.stop()
 
 model = genai.GenerativeModel(
-    'gemini-2.5-flash',
+    'gemini-2.5-pro',
     system_instruction="""
     You are a ConnectWise data specialist. 
     When asked for a graph or chart:
